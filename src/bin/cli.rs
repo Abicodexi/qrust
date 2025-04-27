@@ -1,10 +1,27 @@
-use qr_generator::generate_png;
+use image::{ImageBuffer, Luma};
+use qr_generator::GenerateError;
+use qrcode::{EcLevel, QrCode};
 use std::env;
 use std::fs::File;
 use std::io::Write;
 
 fn print_usage(program: &str) {
     eprintln!("Usage: {} <URL> <width> <height> <output.png>", program);
+}
+
+pub fn generate_png(url: &str, width: u32, height: u32) -> Result<Vec<u8>, GenerateError> {
+    let code = QrCode::with_error_correction_level(url.as_bytes(), EcLevel::M)?;
+
+    let image: ImageBuffer<Luma<u8>, _> = code
+        .render::<Luma<u8>>()
+        .min_dimensions(width, height)
+        .dark_color(Luma([0u8]))
+        .light_color(Luma([255u8]))
+        .build();
+    let dyn_img = image::DynamicImage::ImageLuma8(image);
+    let mut buf = std::io::Cursor::new(Vec::new());
+    dyn_img.write_to(&mut buf, image::ImageFormat::Png)?;
+    Ok(buf.into_inner())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

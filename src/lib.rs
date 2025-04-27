@@ -1,6 +1,5 @@
-use image::{ImageBuffer, ImageError, Luma};
+use image::ImageError;
 use qrcode::types::QrError;
-use qrcode::{EcLevel, QrCode};
 use std::fmt;
 
 /// Error type for QR-code generation failures.
@@ -33,20 +32,4 @@ impl From<ImageError> for GenerateError {
     fn from(e: ImageError) -> Self {
         GenerateError::Image(e)
     }
-}
-
-pub fn generate_png(url: &str, width: u32, height: u32) -> Result<Vec<u8>, GenerateError> {
-    let code = QrCode::with_error_correction_level(url.as_bytes(), EcLevel::M)?;
-
-    let image: ImageBuffer<Luma<u8>, _> = code
-        .render::<Luma<u8>>()
-        .min_dimensions(width, height)
-        .dark_color(Luma([0u8]))
-        .light_color(Luma([255u8]))
-        .build();
-
-    let dyn_image = image::DynamicImage::ImageLuma8(image);
-    let mut buffer = std::io::Cursor::new(Vec::new());
-    dyn_image.write_to(&mut buffer, image::ImageFormat::Png)?;
-    Ok(buffer.into_inner())
 }
