@@ -44,7 +44,6 @@ async fn generate_qr(query: web::Query<QRParams>) -> Result<HttpResponse> {
         image::imageops::overlay(&mut qr_img, &logo, x as i64, y as i64);
     }
 
-    // 3) Encode final image to PNG bytes
     let dyn_img = image::DynamicImage::ImageLuma8(qr_img);
     let mut buf = std::io::Cursor::new(Vec::new());
     dyn_img
